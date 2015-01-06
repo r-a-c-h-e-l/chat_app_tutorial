@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat App Tut</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="default.css">
+  <script src="highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <script src="main.js"></script>
+  <link href='http://fonts.googleapis.com/css?family=Lato:100,300,400,700,900,100italic,300italic,400italic,700italic,900italic|Changa+One' rel='stylesheet' type='text/css'>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+</head>
+<body>
+
+<nav>
+  <ul>
+    <li><a href="#section-1" class="navigation active" id="link1">Introduction</a></li>
+    <li><a href="#section-2" class="navigation" id="link2">Environment / Context</a></li>
+    <li><a href="#section-3" class="navigation" id="link3">Client + Server</a></li>
+    <li><a href="#section-4" class="navigation" id="link4">The Interface</a></li>
+    <li><a href="#section-5" class="navigation" id="link5">Connecting</a></li>
+    <li><a href="#section-6" class="navigation" id="link6">Listening</a></li>
+    <li><a href="#section-7" class="navigation" id="link7">Messaging</a></li>
+    <li><a href="#section-8" class="navigation" id="link8">Testing Locally</a></li>
+    <li><a href="#section-9" class="navigation" id="link9">Multiple Clients</a></li>
+    <li><a href="#section-10" class="navigation" id="link10">Git / Github</a></li>
+    <li><a href="#section-11" class="navigation" id="link11">Digital Ocean</a></li>
+    <li><a href="#section-12" class="navigation" id="link12">Taking it Further</a></li>
+  </ul>
+</nav>
+
+<section id="section-1">
+  <div class="wrapper">
+    <h1> Introduction </h1>
+    <h2> Building A Chat App Using Node + WebSockets  </h2>
+    <h3> What You’ll Need: </h3>
+      <ul>
+        <li>Some basic understanding of Javascript <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript">(learn more)</a></li>
+        <li>WebSockets <a href="https://developer.mozilla.org/en-US/docs/WebSockets/Writing_WebSocket_client_applications">(learn more)</a></li>
+        <li>Node <a href="http://nodejs.org/">(learn more)</a></li>
+      </ul>
+    <h3> How to Navigate This Tutorial: </h3>
+      <p> You can navigate through the various sections of this tutorial using the links on the left, or simply by scrolling down. If you ever feel lost, don't be afraid to return to the top and check out the list of resources above. Below is an example of a code block, a convention you will see throughout this tutorial.</p>
+
+
+    <div class="code-block">
+      <h5> CSS </h5>
+      <pre>
+        <code class="css">
+          body {
+            background: white;
+          }
+        </code>
+      </pre>
+    </div>
+
+    <p> Feel free to copy and paste any code you see in this tutorial, however it may help to type it out yourself.  Practice makes perfect! </p>
+
+    <h3> Let's Get Coding! </h3>
+
+  </div> <!-- End Wrapper -->
+</section> <!-- End Intro Section -->
+
+
+<section id="section-2">
+  <div class="wrapper">
+    <h1> Environment / Context </h1>
+    <h2> What Are WebSockets? </h2>
+    <p> WebSocket is a protocol that enables bi-directional communication via a single TCP connection. It creates an open channel between the client and server over which data can be sent in either direction as long as the connection is open. This means that the server does not need to wait for a request from the client in order send data.</p>
+      <p>Sockets are native to the browser. This is beneficial feature for this project because it will allow the app user to receive messages without the page refreshing each time.</p>
+    <h2> What Is Node? </h2>
+    <p> Node is an environment for server-side and networking applications. Node contains a built-in library to allow applications to act as a Web server. Node can provide an event-driven architecture for building real-time web applications.  </p>
+    <h3> Node Package Manager </h3>
+    <p> This is pre-installed in node and is used to install node programs — libraries and executables. </p>
+    <h3> Package.JSON </h3>
+    <p> This is a file that can be created to tell npm how your package is structured and what to do to install it.
+    </p>
+
+    <h2>Installation </h2>
+    <p> This brief step-by-step guide will take you through the steps of creating a package.JSON and installing the package websockets through your terminal: <p>
+
+    <h4> Open your terminal and create a new directory where all your files for the chatApp will exist.  </h4>
+    <div class="terminal-code">
+      $ mkdir name_of_folder:
+    </div>
+
+    <h4> Initialize the node package manager. This will create a package bundle with the javascript libraries you will need to run the client and server files we will eventually write. It will also enable us to install the websocket package.  </h4>
+    <div class="terminal-code">
+      $ npm init
+    </div>
+
+
+
+
+    <h4> Once you do this a series of automated processes will occur. </h4>
+
+    <div class="terminal-code">
+    <pre>
+This utility will walk you through creating a package.json file.
+It only covers the most common items, and tries to guess sane defaults.
+
+See `npm help json` for definitive documentation on these fields
+and exactly what they do.
+
+Use `npm install <pkg> --save` afterwards to install a package and
+save it as a dependency in the package.json file.
+
+Press ^C at any time to quit.
+name: (new_folder)
+version: (1.0.0)
+description:
+entry point: (index.js)
+test command:
+git repository:
+keywords:
+author:
+license: (ISC)
+About to write to /Users/gengo/new_folder/package.json:
+      </pre>
+    </div>
+
+
+
+      <h4> Next, we will use npm to install the websocket package and save it to make your package dependent upon the websocket package; this essentially means that every time you install this package elsewhere, it will automatically install websockets</h4>
+    <div class="terminal-code">
+      $ npm install ws - -save:
+    </div>
+
+
+
+  </div> <!-- End Wrapper -->
+</section> <!-- End Section 2 -->
+
+<section id="section-3">
+  <div class="wrapper">
+    <h1> Clients + Server </h1>
+      <h2> What is a Client? </h2>
+        <p> A client is essentially an internet user. In our case, every time someone types in the url address for our chatApp, they connect with our websocket and establish themselves as a client! One server can have many clients communicating with it at once. Our client will be represented by an html page that points to a javascript file (client.js) that explicitly tells the browser what to do with every event (more details and clarification to follow!). </p>
+
+      <h2> What is a Server? </h2>
+        <p> Welp. this is a complicated topic, but for our purposes, our server will be a javascript file (server.js) that acts as a command center; the server will receive all incoming traffic from the multiple clients and direct the traffic accordingly. </p>
+
+      <h2> Creating the Client and Server Files </h2>
+        <p>The client and the server are the two main files we will be working on for this chatApp. Since the nature of a chatApp is open and relatively instant, i.e. messages are being sent while simultaneously received, it follows that the nature of the relationship between the client.js file and the server.js file is similar. The client file and the server file are in constant communication, back and forth, with one another; as a result, we will be working on building these files simultaneously.</p>
+        <h4> In terminal, create a new file for the client and for the server. </h4>
+
+        <div class="terminal-code">
+          $ touch client.js
+        </div>
+
+        <div class="terminal-code">
+          $ touch server.js
+        </div>
+
+
+  </div><!-- End Wrapper -->
+</section><!-- End Section 3 -->
+
+<section id="section-4">
+  <div class="wrapper">
+    <h1> The Interface </h1>
+    <h2> Client HTML </h2>
+    <p>We will briefly focus on the HTML page that represents our client file. When a chatApp user types in the url for the app, an HTML page will appear that creates the chat interface. This HTML file can receive any type of CSS styling that you would like, however there a few basic elements that should be present for the chatApp to function: a link to the client.js file, an input area for messages to be typed and a message area for messages to be displayed. It is also important that your HTML file be saved as 'index.html'. This is convention because when your browser goes to your specified url it looks for an index.html file to load first and we want to make sure that it loads our chat page.</p>
+
+    <h4> Touch your index.html and style.css files. </h4>
+
+    <div class="terminal-code">
+      $ touch index.html
+    </div>
+
+    <div class="terminal-code">
+      $ touch style.css
+    </div>
+
+    <h4> Copy this code into your index.html file. </h4>
+    <div class="code-block">
+      <h5> HTML </h5>
+      <pre>
+        <code>
+          &lt;html&gt;
+
+          &lt;head&gt;
+          &lt;link href="style.css" rel="stylesheet" type="text/css"&gt;
+          &lt;/head&gt;
+
+          &lt;body&gt;
+
+          &lt;div id="messagebox"&gt;   &lt;/div&gt;
+
+          &lt;input type="text" id="textbox"&gt;
+
+          &lt;script src="client.js">  &lt;/script&gt;
+          &lt;/body&gt;
+
+          &lt;/html&gt;
+
+        </code>
+      </pre>
+    </div>
+
+    <p>Check out this <a href="images/example.png"> example </a> of what a basic chat app might look like with some styling.</p>
+
+
+  </div><!-- End Wrapper -->
+</section><!-- End Section 4 -->
+
+
+<section id="section-5">
+  <div class="wrapper">
+    <h1> Connecting the Client + Server </h1>
+    <h2> Linking the Paths </h2>
+      <p>First we will have to enable the client and server to find one another. We do this by directing the client to a specific url at a specific port, and for the server, we specify a port it will be listening at. Not surprisingly, these two ports should be identical.</p>
+
+      <h4> Client File </h4>
+      <div class="code-block">
+        <h5> Javascript (Client)</h5>
+        <pre>
+          <code class="javascript">
+            var ws = new WebSocket("ws://localhost:3000");
+          </code>
+        </pre>
+      </div>
+
+
+      <h4> Server File </h4>
+        <div class="code-block server">
+          <h5> Javascript (Server)</h5>
+          <pre>
+            <code class="javascript">
+              var WebSocketServer = require('ws').Server;
+              var server = new WebSocketServer({port:3000});
+            </code>
+          </pre>
+        </div>
+
+      <p> You'll notice that the server file declares a variable that requires 'ws'. Earlier in the tutorial we had you install the ws package into our package.JSON. The server.js file now states that it is dependent upon, or required to have, the ws package to run. If this package is not present in our package.JSON then the code would fail to run correctly. </p>
+
+      <h2> Local vs. Non-Local Host</h2>
+      <p>The other thing you may have taken note of is the local address we used on the client.js file. For the purposes of developing and testing the app we will remain local, operating many clients from your computer, i.e. multiple browser tabs. Later on, when the chatApp is fully functioning we will move all our files to a server off of our local computers so that we may avoid firewall issues and communicate with our friends across the globe! In doing this, we will change the address for the client to another url (more details in the <a href="#section-11"> section on Digital Ocean</a>)</p>
+
+
+  </div><!-- End Wrapper -->
+</section><!-- End Section 5 -->
+
+<section id="section-6">
+  <div class="wrapper">
+    <h1> Listening </h1>
+    <h2> Establishing a Single Client to Server Connection </h2>
+    <p>Both the client and server will be handling multiple events. The first, and most significant event one could foresee occurring is connection! We've already given the client.js file a path to follow, but we haven't officially established a connection to the server. Similarly, we have already established that the server.js file will be receiving connections on a specific port, but we haven't specified that the server should be listening for connections! In order to do this, both parties will set up a type of 'listener.'
+    </p>
+    <p>The client will listen for the event 'open'; when this event occurs it will signify to the client that the port is open and the connection to the server has been made. The server will listen for the event 'connection'; when this event occurs it will signify to the server that a client has connected.</p>
+
+    <h4> Here we are establishing a listener to tell us when we have connected with the server. </h4>
+    <div class="code-block">
+      <h5> Javascript (Client)</h5>
+      <pre>
+        <code class="javascript">
+          client.addEventListener("open", function(evt) {
+            console.log("you are connected!");
+          });
+        </code>
+      </pre>
+    </div>
+
+    <h4> Here we are establishing a listener to tell us when we have connected with the client. </h4>
+    <div class="code-block">
+      <h5> Javascript (Server)</h5>
+      <pre>
+        <code class="javascript">
+          server.on("connection",function(client) {
+            console.log("friend connected");
+          });
+        </code>
+      </pre>
+    </div>
+
+    <p>Now we are listening on both sides. Once the connection event occurs we can begin listening for other events and specifying an order of actions that should occur in response to those particular actions.</p>
+
+  </div><!-- End Wrapper -->
+</section><!-- End Section 6 -->
+
+<section id="section-7">
+  <div class="wrapper">
+    <h1> Messaging </h1>
+    <h2> Message Handling </h2>
+    <p>Since we are building a chat app, one might imagine that messages are an important event to handle. Both the client and the server have to specify when and how messages are sent and received. It is important to note that since the server is the only player with direct access to everyone involved in the chat then everything that a client sends must first be sent to the server so that it may be directed to all appropriate parties.
+    </p>
+    <p>The client will listen for the event 'open'; when this event occurs it will signify to the client that the port is open and the connection to the server has been made. The server will listen for the event 'connection'; when this event occurs it will signify to the server that a client has connected.</p>
+
+    <h4> Here we are establishing a listener for the 'enter key' event. When that occurs we are saving the value and sending it to the server. </h4>
+    <div class="code-block">
+      <h5> Javascript (Client)</h5>
+      <pre>
+        <code class="javascript">
+          var input = document.getElementById("message");
+
+          input.addEventListener("keydown", function(evt) {
+
+            if(evt.keyCode === 13) {
+              var clientMessage = input.value;
+              client.send(clientMessage);
+              input.value = "";
+            }
+
+          });
+        </code>
+      </pre>
+    </div>
+
+<h4> Here we are establishing a listener for the message event. </h4>
+    <div class="code-block">
+      <h5> Javascript (Server)</h5>
+      <pre>
+        <code class="javascript">
+          client.on("message", function(message) {
+            console.log(message);
+          });
+        </code>
+      </pre>
+    </div>
+
+    <h4> When the message comes in, it is being sent back to the client it is important to pay attention to scope, and place the listener on the client within the server.on listener, where we have established 'client' as a parameter. </h4>
+    <div class="code-block">
+      <h5> Javascript (Server)</h5>
+      <pre>
+        <code class="javascript">
+          client.send(message);
+        </code>
+      </pre>
+    </div>
+
+    <h4>Listen for incoming messages to the client: set up listener for messages.</h4>
+    <div class="code-block">
+      <h5> Javascript (Client)</h5>
+      <pre>
+        <code class="javascript">
+          client.addEventListener("message", function(evt) {
+
+          });
+        </code>
+      </pre>
+    </div>
+
+    <h4>When client receives message, print to browser: grab message element, create new li, set innerHTML of new li to msg received, append to ul or div.</h4>
+    <div class="code-block">
+      <h5> Javascript (Client)</h5>
+      <pre>
+        <code class="javascript">
+          var message = evt.data;
+
+          var li = document.createElement("li");
+          li.innerHTML= message;
+          li.style.fontSize="19px";
+
+          var uL = document.getElementById("messages");
+          uL.appendChild(li);
+
+          var chat= document.getElementById("chatDiv");
+          chat.scrollTop= chat.scrollHeight;
+        </code>
+      </pre>
+    </div>
+
+    <h3>Final Client / Server Code</h3>
+    <div class="result-block">
+      <div class="half left">
+        <h5> Javascript (Client)</h5>
+        <pre>
+          <code class="javascript">
+            var client = new WebSocket("ws://localhost:3000");
+
+            client.addEventListener("open", function(evt) {
+              console.log("you are connected!");
+            });
+
+            var input = document.getElementById("message");
+            input.addEventListener("keydown", function(evt) {
+              if(evt.keyCode === 13) {
+                var clientMessage = input.value;
+                client.send(clientMessage);
+                input.value = "";
+              }
+            });
+
+            client.addEventListener("message", function(evt) {
+              var message = evt.data;
+              console.log(message);
+              var li = document.createElement("li");
+              li.innerHTML= message;
+              li.style.fontSize="19px";
+              var uL = document.getElementById("messages");
+              uL.appendChild(li);
+              var chat= document.getElementById("chatDiv");
+              chat.scrollTop= chat.scrollHeight;
+            });
+
+          </code>
+        </pre>
+      </div>
+
+      <div class="half right">
+        <h5> Javascript (Server)</h5>
+        <pre>
+          <code class="javascript">
+            var WebSocketServer = require("ws").Server;
+            var server = new WebSocketServer({port: 3000});
+
+            server.on("connection",function(client) {
+              console.log("friend connected");
+
+              client.on("message", function(message) {
+                console.log(message);
+
+                client.send(message);
+
+              });
+
+            });
+          </code>
+        </pre>
+      </div>
+    </div>
+
+  </div><!-- End Wrapper -->
+</section><!-- End Section 7 -->
+
+
+<section id="section-8">
+  <div class="wrapper">
+    <h1> Testing Locally </h1>
+    <h2> run your server in terminal </h2>
+    <p>When you run the server.js file the terminal cursor should enter a new line and begin to blink. This signifies that your server is running.</p>
+    <div class="terminal-code">
+      $ node server.js
+    </div>
+
+    <h2>Open your html file in the browser</h2>
+    <p>Open your 'index.html' file from your terminal. Your terminal will open your default browser, which will be directed by your 'client.js'file to localhost:3000.  It is important that your open the 'index.html' file from terminal because it will automatically implement HTTP Protocol.</p>
+    <div class="terminal-code">
+      $ open index.html
+    </div>
+
+    <h2>Take it For a Ride</h2>
+    <p>Type a message in your input box and see if it shows up in your message window! </p>
+
+  </div><!-- End Wrapper -->
+</section><!-- End Section 8 -->
+
+<section id="section-9">
+  <div class="wrapper">
+    <h1> Multiple Clients </h1>
+    <h2> handling multiple clients to server </h2>
+    <p>Again, since we are building a chat app, it is not hard to imagine that multiple clients (people) will want to sign on at once and use it. Therefore, we have to prepare our server to accept multiple clients at the same time! As our server exists now, when a connection is made, a client is established and a response is sent to that very same client. Currently this relationship exists in isolation, the server knows and can identify each client upon an event because it knows which client triggered the event. To enable the server to pass along a message to anyone other than the client who sent it we first have store the clients in a list as they connect. In this way we can specify that when the server receives a message from one client it should respond by sending it to every client stored in the list.</p>
+
+    <h4> Here we will create an empty array to store clients as they connect. Then upon the event of a message we will cycle through the array and send the message to every client in the list. </h4>
+
+    <div class="code-block">
+      <h5> Javascript (Server)</h5>
+      <pre>
+        <code class="javascript">
+          var clientArray= [];
+
+          server.on("connection",function(client) {
+            console.log("friend connected");
+
+            clientArray.push(client);
+
+            client.on("message", function(message) {
+              console.log(message);
+              clientArray.forEach(function(client) {
+                client.send(message);
+              })
+            });
+
+          });
+        </code>
+      </pre>
+    </div>
+
+    <h3> Test it out </h3>
+    <p>Open multiple browser tabs with the chat url. Now you are all clients and can chat with one another!</p>
+
+  </div><!-- End Wrapper -->
+</section><!-- End Section 9 -->
+
+<section id="section-10">
+  <div class="wrapper">
+    <h1> Git / Github </h1>
+    <p> It is important to back up your work frequently throughout your project. We recommend using <a href="http://git-scm.com/about"> Git </a> and <a href="http://github.com/">GitHub</a> repositories.</p>
+    <h2> In Github </h2>
+    <p>Create a new repository for the project. Then copy the SSH address for this new repository. (It will look similar to this: git@github.com:your_user_name/new_repo.git.)
+    </p>
+
+    <h2>In Git</h2>
+    <p>Open your project folder in the terminal.</p>
+    <h4>The following will initialize and add the files to your Git repository.</h4>
+    <div class="terminal-code">
+      $ git init <br>
+      $ git add . <br>
+      $ git commit -m “message"
+    </div>
+
+    <p>Now that’s done, you want to push copies of the files in your git repository to the repository you created on GitHub.</p>
+
+    <h4>The following links your Github repo to your local project folder and pushes the files up to Github.</h4>
+    <div class="terminal-code">
+      $ git remote add origin git@github.com:your_user_name/new_repo.git <br>
+      $ git push origin master
+    </div>
+
+    <p>You can also add a file to your Git repository to prevent selected files from being pushed to GitHub. This is called a .gitignore file.</p>
+
+    <h4>Inside of your project folder, type the following.</h4>
+    <div class="terminal-code">
+      $ touch .gitignore
+    </div>
+
+    <p>You can then open this file in a text editor and add the names of the files that should be ignored.</p>
+
+  </div><!-- End Wrapper -->
+</section><!-- End Section 10 -->
+
+<section id="section-11">
+  <div class="wrapper">
+    <h1> Digital Ocean </h1>
+    <h2>What is Digital Ocean?</h2>
+    <p>Digital Ocean is a private server provider based in New York City.  It allows developers to lease space for hosting their own web apps, and is what we will be using to host our chat app.  You can create an account <a href="https://www.digitalocean.com/"> here </a>.</p>
+
+    <h2>Setting Up Your Server</h2>
+    <p>Connecting to your Digital Ocean server is easy.  Before doing so, however, make sure that all of your HTML, CSS, and Javascript files for your browser-client code are in one folder, and that it includes a package.json. Once that is done, all you have to do is enter the following into your terminal window: </p>
+    <div class="terminal-code">
+      $ ssh root@[your.ip.address.here]
+    </div>
+
+    <p>Now you will need to pull down the github repository you created earlier. On your repository page, look for the section on the right that says “HTTPS clone URL.” Copy the url provided there, and type the following into your terminal:</p>
+
+    <div class="terminal-code">
+      git clone https://github.com/[repository.link.here]
+    </div>
+
+    <p>This will create a folder for your repo so that you don’t have to do so beforehand.</p>
+
+    <h2>Starting Your Server </h2>
+    <p>We will need two terminal windows for this next step.  First, make sure you are inside of the repo folder you cloned.  One window will run the chat app server file, turning your Digital Ocean box into a web socket server.  To do this, type the following: </p>
+
+    <div class="terminal-code">
+      node server.js
+    </div>
+
+    <p>In the other window, we need to run your Digital Ocean server as an http server to serve up your files.  To do this, simply type: </p>
+
+    <div class="terminal-code">
+      http-server
+    </div>
+
+    <p>Congratulations! You can now host your app for all the world to see.</p>
+
+  </div><!-- End Wrapper -->
+</section><!-- End Section 11 -->
+
+<section id="section-12">
+  <div class="wrapper">
+    <h1> Taking it Further </h1>
+    <p>Now that you have the basics down, check out these ideas on how to take your chat app to the next step! </p>
+    <ul>
+      <li>Private messaging between users</li>
+      <li>List of active users</li>
+      <li>Send files, images, and gifs</li>
+      <li>Identifying multiple users by name</li>
+      <li>Sending data more complicated than a string via JSON.stringify
+      <li>Storing user info</li>
+      <li>Storing message history to send to users upon connection</li>
+      <li>Handling close events (when a user leaves the chat app)</li>
+    </ul>
+
+    <h3> Happy Chatting! </h3>
+
+
+
+  </div><!-- End Wrapper -->
+</section><!-- End Section 11 -->
+
+
+  <!-- Smooth Scrolling Function -->
+  <script>
+  $(function() {
+    $('a[href*=#]:not([href=#])').click(function() {
+      if (location.pathname.replace(/^\//,'') == this.pathname.replace(/^\//,'') && location.hostname == this.hostname) {
+        var target = $(this.hash);
+        target = target.length ? target : $('[name=' + this.hash.slice(1) +']');
+        if (target.length) {
+          $('html,body').animate({
+            scrollTop: target.offset().top
+          }, 500);
+          return false;
+        }
+      }
+    });
+  });
+  </script>
+
+</body>
+</html>
